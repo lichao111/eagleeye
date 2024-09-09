@@ -503,7 +503,7 @@ void RTSPReadNode::executeNodeInfo(){
         // RGB/BGR
         ImageSignal<Array<unsigned char,3>>* output_img_signal = (ImageSignal<Array<unsigned char,3>>*)(this->getOutputPort(0));
         MetaData output_meta = output_img_signal->meta();
-        output_meta.timestamp = ntp_time;
+        output_meta.timestamp = (double)(EagleeyeTime::getCurrentTime())/1000000.0;
         output_img_signal->setData(
             Matrix<Array<unsigned char,3>>(this->m_image_h,this->m_image_w,ntp_data,false,true), 
             output_meta
@@ -513,7 +513,7 @@ void RTSPReadNode::executeNodeInfo(){
         // RGBA/BGRA
         ImageSignal<Array<unsigned char,4>>* output_img_signal = (ImageSignal<Array<unsigned char,4>>*)(this->getOutputPort(0));
         MetaData output_meta = output_img_signal->meta();
-        output_meta.timestamp = ntp_time;
+        output_meta.timestamp = (double)(EagleeyeTime::getCurrentTime())/1000000.0;
         output_img_signal->setData(
             Matrix<Array<unsigned char,4>>(this->m_image_h,this->m_image_w,ntp_data,false,true), 
             output_meta
@@ -521,7 +521,7 @@ void RTSPReadNode::executeNodeInfo(){
     }
 
     ImageSignal<double>* output_timestamp_signal = (ImageSignal<double>*)(this->getOutputPort(1));
-    output_timestamp_signal->getData().at(0,0) = ntp_time;
+    output_timestamp_signal->getData().at(0,0) = (double)(EagleeyeTime::getCurrentTime())/1000000.0;
 }
 
 void RTSPReadNode::postprocess_by_rga(){
