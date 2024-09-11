@@ -3,7 +3,7 @@ namespace eagleeye{
 FrameSyncNode::FrameSyncNode(){
     this->m_thread_status = true;
     this->m_is_ini = false;
-    this->m_max_cache_frame_num = 90;  // 最大允许差别3s (3*30)
+    this->m_max_cache_frame_num = 1 * 30;   // 最大允许差别1s (1*30)
     m_sync_time_delta = 24*60*60;           // 0.05s同步误差
 }
 FrameSyncNode::~FrameSyncNode(){
