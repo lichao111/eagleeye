@@ -68,6 +68,8 @@ public:
 	 * @param data 
 	 */
     void setKV(std::string key, std::string value);
+	void setV(const neb::CJsonObject& data);
+	void setV(neb::CJsonObject&& data);
 
 	/**
 	 * @brief Set the Data object

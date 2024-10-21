@@ -854,7 +854,7 @@ ServerStatus eagleeye_pipeline_server_start(std::string server_config, std::stri
         }
         server_key = key;
     }
-    if(server_mode == "asyn"){
+    else if(server_mode == "asyn"){
         // 忽略数据源
         // 异步模式 (QueueNode + AutoPipeline)
         EAGLEEYE_LOGD("asyn mode server");

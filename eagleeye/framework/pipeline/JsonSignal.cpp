@@ -109,6 +109,14 @@ void JsonSignal::setData(JsonSignal::DataType data){
     modified();
 }
 
+void JsonSignal::setV(const neb::CJsonObject &data){
+	m_json_obj = data;
+}
+
+void JsonSignal::setV(neb::CJsonObject&& data){
+	m_json_obj = std::move(data);
+}
+
 void JsonSignal::setKV(std::string key, std::string value){
 	m_json_obj.ReplaceAdd(key, value);
 }
