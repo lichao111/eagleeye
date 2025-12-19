@@ -213,10 +213,11 @@ set(EAGLEEYE_SRC
     eagleeye/engine/nano/op/keepratio_op.cpp
     eagleeye/engine/nano/op/colorcvt_op.cpp
     eagleeye/engine/nano/op/yuv_op.cpp
-    eagleeye/engine/nano/op/keepratio_by_scale_op.cpp
+    eagleeye/engine/nano/op/keepratio2_op.cpp
     eagleeye/engine/nano/op/inv_keepratio_layout_op.cpp
+    eagleeye/engine/nano/op/inv_keepratio_op.cpp
     eagleeye/engine/nano/op/image_rotate_op.cpp
-    eagleeye/engine/nano/op/auto_keepratio_op.cpp    
+    eagleeye/engine/nano/op/auto_keepratio_op.cpp
     eagleeye/engine/nano/op/face_id_op.cpp
     eagleeye/engine/nano/op/kvmemory_w_op.cpp
     eagleeye/engine/nano/op/kvmemory_r_op.cpp

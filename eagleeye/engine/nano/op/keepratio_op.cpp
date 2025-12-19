@@ -60,15 +60,14 @@ int KeepRatioOp::runOnCpu(const std::vector<Tensor>& input){
     int offset_y = (after_image_h - image_h)/2;
 
     // 保存布局信息
-    this->m_outputs[1] = Tensor(std::vector<int64_t>{7}, EAGLEEYE_INT, DataFormat::AUTO, CPU_BUFFER);
-    int* layout_ptr = this->m_outputs[1].cpu<int>();
-    layout_ptr[0] = offset_x;
-    layout_ptr[1] = offset_y;
-    layout_ptr[2] = image_w;
-    layout_ptr[3] = image_h;
+    this->m_outputs[1] = Tensor(std::vector<int64_t>{6}, EAGLEEYE_FLOAT, DataFormat::AUTO, CPU_BUFFER);
+    float* layout_ptr = this->m_outputs[1].cpu<float>();
+    layout_ptr[0] = 1.0f;           // x scale
+    layout_ptr[1] = 1.0f;           // y scale
+    layout_ptr[2] = offset_x;       // x offset
+    layout_ptr[3] = offset_y;       // y offset
     layout_ptr[4] = image_w;
     layout_ptr[5] = image_h;
-    layout_ptr[6] = 0;
 
     // 保存图像数据信息
     if(image_dim.size() == 3){
@@ -84,7 +83,7 @@ int KeepRatioOp::runOnCpu(const std::vector<Tensor>& input){
             unsigned char* row_output_ptr = output_ptr + (i+offset_y)*after_image_w*3 + offset_x*3;
             unsigned char* row_image_ptr = image_ptr + i*image_w*3;
             memcpy(row_output_ptr,row_image_ptr, image_w*3);
-        }        
+        }  
     }
     else{
         // gray
@@ -214,14 +213,18 @@ int ResizeKeepRatioOp::runOnCpu(const std::vector<Tensor>& input){
 
     if(this->m_outputs[1].empty()){
         this->m_outputs[1] = Tensor(
-            std::vector<int64_t>{1},
+            std::vector<int64_t>{6},
             EAGLEEYE_FLOAT,
             DataFormat::NONE,
             CPU_BUFFER
         );
     }
+    memset(this->m_outputs[1].cpu<float>(), 0, sizeof(float)*6);
     float* scale_ptr = this->m_outputs[1].cpu<float>();
-    scale_ptr[0] = float(dimx[h_dim_i]) / float(new_height);
+    scale_ptr[0] = float(dimx[w_dim_i]) / float(new_width);
+    scale_ptr[1] = float(dimx[h_dim_i]) / float(new_height);
+    scale_ptr[4] = dimx[w_dim_i];
+    scale_ptr[5] = dimx[h_dim_i];
 
     int count = (dimx.size() == 2 || dimx.size() == 3) ? 1 : dimx[0];
     int channels = dimx.size() == 2 ? 1 : dimx[dimx.size()-1];

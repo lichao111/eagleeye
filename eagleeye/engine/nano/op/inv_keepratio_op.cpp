@@ -1,18 +1,19 @@
-#include "eagleeye/engine/nano/op/inv_keepratio_layout_op.h"
+#include "eagleeye/engine/nano/op/inv_keepratio_op.h"
 #include "eagleeye/common/EagleeyeLog.h"
 #include <fstream>
 
 namespace eagleeye{
 namespace dataflow{
-InvKeepRatioLayoutOp::InvKeepRatioLayoutOp(){}
-InvKeepRatioLayoutOp::InvKeepRatioLayoutOp(const InvKeepRatioLayoutOp& op){}
-InvKeepRatioLayoutOp::~InvKeepRatioLayoutOp(){}
+InvKeepRatioOp::InvKeepRatioOp(){}
+InvKeepRatioOp::InvKeepRatioOp(const InvKeepRatioOp& op){}
+InvKeepRatioOp::~InvKeepRatioOp(){}
 
-int InvKeepRatioLayoutOp::init(std::map<std::string, std::vector<float>> params){
+int InvKeepRatioOp::init(std::map<std::string, std::vector<float>> params){
+
     return 0;
 }
 
-int InvKeepRatioLayoutOp::runOnCpu(const std::vector<Tensor>& input){
+int InvKeepRatioOp::runOnCpu(const std::vector<Tensor>& input){
     // 0: layout 
     // 1: location
     const float* layout_info = input[0].cpu<float>();
@@ -30,23 +31,22 @@ int InvKeepRatioLayoutOp::runOnCpu(const std::vector<Tensor>& input){
     }
 
     int num = position_dim[0];
-    int points_num = position_dim[1] / 2;
     const float* position_ptr = position.cpu<float>();
     float* inv_position_ptr = this->m_outputs[0].cpu<float>();
     for(int i=0; i<num; ++i){
         const float* position_row_ptr = position_ptr + i * position_dim[1];
         float* inv_position_row_ptr = inv_position_ptr + i * position_dim[1];
-        for(int j=0; j<points_num; ++j){
-            // x
-            inv_position_row_ptr[j*2] = std::min(std::max((position_row_ptr[j*2] - layout_offset_x) * x_scale, 0.0f), float(layout_w));
-            // y
-            inv_position_row_ptr[j*2+1] = std::min(std::max((position_row_ptr[j*2+1] - layout_offset_y) * y_scale, 0.0f), float(layout_h));
-        }
+        memcpy(inv_position_row_ptr, position_row_ptr, sizeof(float)*position_dim[1]);
+
+        inv_position_row_ptr[0] = std::min(std::max((position_row_ptr[0]-layout_offset_x) * x_scale, 0.0f), float(layout_w));
+        inv_position_row_ptr[1] = std::min(std::max((position_row_ptr[1]-layout_offset_y) * y_scale, 0.0f), float(layout_h));
+        inv_position_row_ptr[2] = std::min(std::max((position_row_ptr[2]-layout_offset_x) * x_scale, 0.0f), float(layout_w));
+        inv_position_row_ptr[3] = std::min(std::max((position_row_ptr[3]-layout_offset_y) * y_scale, 0.0f), float(layout_h));
     }
     return 0;
 }
 
-int InvKeepRatioLayoutOp::runOnGpu(const std::vector<Tensor>& input){
+int InvKeepRatioOp::runOnGpu(const std::vector<Tensor>& input){
     return -1;
 }
 }

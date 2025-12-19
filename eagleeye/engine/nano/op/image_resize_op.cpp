@@ -6,6 +6,7 @@
 #endif
 #include "eagleeye/common/EagleeyeLog.h"
 
+#include <opencv2/opencv.hpp>
 #ifdef EAGLEEYE_RKCHIP
 #include "im2d_version.h"
 #include "rk_type.h"
@@ -185,32 +186,40 @@ int ResizeOp::runOnCpu(const std::vector<Tensor>& input){
         // 三通道图
 // #pragma omp parallel for
         for (int i = 0; i < count; ++i) {
-            math::arm::bilinear_rgb_8u_3d_interp(
-                x_ptr+i*in_width*in_height*3,
-                y_ptr+i*out_width*out_height*3,
-                in_width,
-                in_height,
-                0,0,
-                in_width,
-                out_width,
-                out_height
-            );
+            // our optimize(not ok)
+            // math::arm::bilinear_rgb_8u_3d_interp(
+            //     x_ptr+i*in_width*in_height*3,
+            //     y_ptr+i*out_width*out_height*3,
+            //     in_width,
+            //     in_height,
+            //     0,0,
+            //     in_width,
+            //     out_width,
+            //     out_height
+            // );
+
+            // opencv
+            cv::resize(cv::Mat(in_height, in_width, CV_8UC3, x_ptr+i*in_width*in_height*3), cv::Mat(out_height, out_width, CV_8UC3, y_ptr+i*out_width*out_height*3), cv::Size(out_width, out_height));
         }
     }
     else{
         // 灰度图
 // #pragma omp parallel for
         for (int i = 0; i < count; ++i) {
-            math::arm::bilinear_gray_8u_1d_interp(
-                x_ptr+i*in_width*in_height,
-                y_ptr+i*out_width*out_height,
-                in_width,
-                in_height,
-                0,0,
-                in_width,
-                out_width,
-                out_height
-            );
+            // our optimize(not ok)
+            // math::arm::bilinear_gray_8u_1d_interp(
+            //     x_ptr+i*in_width*in_height,
+            //     y_ptr+i*out_width*out_height,
+            //     in_width,
+            //     in_height,
+            //     0,0,
+            //     in_width,
+            //     out_width,
+            //     out_height
+            // );
+
+            // opencv
+            cv::resize(cv::Mat(in_height, in_width, CV_8U, x_ptr+i*in_width*in_height), cv::Mat(out_height, out_width, CV_8U, y_ptr+i*out_width*out_height), cv::Size(out_width, out_height));
         }
     }
 #else
@@ -218,32 +227,40 @@ int ResizeOp::runOnCpu(const std::vector<Tensor>& input){
         // 三通道图
 // #pragma omp parallel for
         for (int i = 0; i < count; ++i) {
-            math::x86::bilinear_rgb_8u_3d_interp(
-                x_ptr+i*in_width*in_height*3,
-                y_ptr+i*out_width*out_height*3,
-                in_width,
-                in_height,
-                0,0,
-                in_width,
-                out_width,
-                out_height
-            );
+            // our optimize(not ok)
+            // math::x86::bilinear_rgb_8u_3d_interp(
+            //     x_ptr+i*in_width*in_height*3,
+            //     y_ptr+i*out_width*out_height*3,
+            //     in_width,
+            //     in_height,
+            //     0,0,
+            //     in_width,
+            //     out_width,
+            //     out_height
+            // );
+
+            // opencv
+            cv::resize(cv::Mat(in_height, in_width, CV_8UC3, x_ptr+i*in_width*in_height*3), cv::Mat(out_height, out_width, CV_8UC3, y_ptr+i*out_width*out_height*3), cv::Size(out_width, out_height));
         }
     }
     else{
         // 灰度图
 // #pragma omp parallel for
         for (int i = 0; i < count; ++i) {
-            math::x86::bilinear_gray_8u_1d_interp(
-                x_ptr+i*in_width*in_height,
-                y_ptr+i*out_width*out_height,
-                in_width,
-                in_height,
-                0,0,
-                in_width,
-                out_width,
-                out_height
-            );
+            // our optimize(not ok)
+            // math::x86::bilinear_gray_8u_1d_interp(
+            //     x_ptr+i*in_width*in_height,
+            //     y_ptr+i*out_width*out_height,
+            //     in_width,
+            //     in_height,
+            //     0,0,
+            //     in_width,
+            //     out_width,
+            //     out_height
+            // );
+
+            // opencv
+            cv::resize(cv::Mat(in_height, in_width, CV_8U, x_ptr+i*in_width*in_height), cv::Mat(out_height, out_width, CV_8U, y_ptr+i*out_width*out_height), cv::Size(out_width, out_height));
         } 
     }
 #endif

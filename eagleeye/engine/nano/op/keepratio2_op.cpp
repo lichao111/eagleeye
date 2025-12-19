@@ -1,4 +1,4 @@
-#include "eagleeye/engine/nano/op/keepratio_by_scale_op.h"
+#include "eagleeye/engine/nano/op/keepratio2_op.h"
 #include "eagleeye/common/EagleeyeLog.h"
 #include <fstream>
 #if defined (__ARM_NEON) || defined (__ARM_NEON__)  
@@ -10,20 +10,20 @@
 
 namespace eagleeye{
 namespace dataflow{
-KeepRatioByScaleOp::KeepRatioByScaleOp(){
+KeepRatio2Op::KeepRatio2Op(){
     this->m_ratio = 1.0f;
 }
 
-KeepRatioByScaleOp::KeepRatioByScaleOp(const KeepRatioByScaleOp& op){
+KeepRatio2Op::KeepRatio2Op(const KeepRatio2Op& op){
     this->m_ratio = op.m_ratio;
     this->m_out_size = op.m_out_size;
 }
 
-KeepRatioByScaleOp::~KeepRatioByScaleOp(){
+KeepRatio2Op::~KeepRatio2Op(){
 
 }
 
-int KeepRatioByScaleOp::init(std::map<std::string, std::vector<float>> params){
+int KeepRatio2Op::init(std::map<std::string, std::vector<float>> params){
     if(params.find("ratio") != params.end()){
         this->m_ratio = params["ratio"][0];
     }
@@ -38,7 +38,7 @@ int KeepRatioByScaleOp::init(std::map<std::string, std::vector<float>> params){
     return 0;
 }
 
-int KeepRatioByScaleOp::runOnCpu(const std::vector<Tensor>& input){
+int KeepRatio2Op::runOnCpu(const std::vector<Tensor>& input){
     Tensor image = input[0];
     unsigned char* image_ptr = image.cpu<unsigned char>();
 
@@ -47,7 +47,7 @@ int KeepRatioByScaleOp::runOnCpu(const std::vector<Tensor>& input){
     int image_w = image_dim[1];
 
     if(image_dim.size() != 3 && image_dim.size() != 2){
-        EAGLEEYE_LOGE("KeepRatioByScaleOp only support image rgb/bgr/gray");
+        EAGLEEYE_LOGE("KeepRatio2Op only support image rgb/bgr/gray");
         return -1;
     }
 
@@ -163,20 +163,18 @@ int KeepRatioByScaleOp::runOnCpu(const std::vector<Tensor>& input){
     }
 
     // 保存布局信息
-    this->m_outputs[1] = Tensor(std::vector<int64_t>{7}, EAGLEEYE_INT, DataFormat::AUTO, CPU_BUFFER);
-    int* layout_ptr = this->m_outputs[1].cpu<int>();
-    layout_ptr[0] = offset_x;
-    layout_ptr[1] = offset_y;
-    layout_ptr[2] = after_image_content_w;
-    layout_ptr[3] = after_image_content_h;
-    layout_ptr[4] = after_image_content_w;
-    layout_ptr[5] = after_image_content_h;
-    layout_ptr[6] = 0;
-    
+    this->m_outputs[1] = Tensor(std::vector<int64_t>{6}, EAGLEEYE_FLOAT, DataFormat::AUTO, CPU_BUFFER);
+    float* layout_ptr = this->m_outputs[1].cpu<float>();
+    layout_ptr[0] = 1.0f/w_scale;
+    layout_ptr[1] = 1.0f/h_scale;
+    layout_ptr[2] = offset_x;
+    layout_ptr[3] = offset_y;
+    layout_ptr[4] = image_w;
+    layout_ptr[5] = image_h;
     return 0;
 }
 
-int KeepRatioByScaleOp::runOnGpu(const std::vector<Tensor>& input){
+int KeepRatio2Op::runOnGpu(const std::vector<Tensor>& input){
     return -1;
 }
 }
