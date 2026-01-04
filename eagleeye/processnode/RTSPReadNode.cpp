@@ -546,8 +546,45 @@ void RTSPReadNode::postprocess_by_rga(){
         MppBuffer src_buf   = mpp_frame_get_buffer(mpp_frame);
         RK_S64 pts = mpp_frame_get_pts(mpp_frame);
 
-        int src_format = RK_FORMAT_YCbCr_420_SP;
-        int src_buf_size = src_width * src_height * get_bpp_from_format(src_format);
+        // 获取MPP帧的实际像素格式
+        MppFrameFormat mpp_fmt = mpp_frame_get_fmt(mpp_frame);
+        int src_format = RK_FORMAT_YCbCr_420_SP;  // 默认NV12
+        
+        // MPP格式转RGA格式
+        if (mpp_fmt == MPP_FMT_YUV420SP) {
+            src_format = RK_FORMAT_YCbCr_420_SP;  // NV12
+        } else if (mpp_fmt == MPP_FMT_YUV420SP_VU) {
+            src_format = RK_FORMAT_YCrCb_420_SP;  // NV21
+        } else if (mpp_fmt == MPP_FMT_YUV420P) {
+            src_format = RK_FORMAT_YCbCr_420_P;   // I420
+        } else {
+            EAGLEEYE_LOGE("Unsupported MPP format %d, using default NV12", mpp_fmt);
+        }
+        
+        // 检查buffer有效性
+        if (src_buf == NULL) {
+            EAGLEEYE_LOGE("Invalid MPP buffer (NULL)");
+            mpp_frame_deinit(&mpp_frame);
+            continue;
+        }
+        
+        // 使用MPP buffer的实际大小，而不是手动计算
+        int src_buf_size = mpp_buffer_get_size(src_buf);
+        if (src_buf_size <= 0) {
+            EAGLEEYE_LOGE("Invalid MPP buffer size: %d", src_buf_size);
+            mpp_frame_deinit(&mpp_frame);
+            continue;
+        }
+        
+        int src_fd = mpp_buffer_get_fd(src_buf);
+        if (src_fd < 0) {
+            EAGLEEYE_LOGE("Invalid MPP buffer fd: %d", src_fd);
+            mpp_frame_deinit(&mpp_frame);
+            continue;
+        }
+        
+        // EAGLEEYE_LOGD("MPP buffer size: %d (calculated would be: %d)", src_buf_size, src_h_stride * src_v_stride * 3 / 2);
+        
         rga_buffer_t src_img, dst_img;
         rga_buffer_handle_t src_handle, dst_handle;
         memset(&src_img, 0, sizeof(src_img));
@@ -575,7 +612,9 @@ void RTSPReadNode::postprocess_by_rga(){
 
         int dst_buf_size = dst_width * dst_height * get_bpp_from_format(dst_format);
         unsigned char* dst_buf = new unsigned char[dst_buf_size];
-        src_handle = importbuffer_virtualaddr(mpp_buffer_get_ptr(src_buf), src_buf_size);
+        
+        // 使用fd导入MPP ION buffer（硬件解码器输出），而不是虚拟地址
+        src_handle = importbuffer_fd(src_fd, src_buf_size);
         dst_handle = importbuffer_virtualaddr(dst_buf, dst_buf_size);
 
         src_img = wrapbuffer_handle(src_handle, src_width, src_height, src_format);
